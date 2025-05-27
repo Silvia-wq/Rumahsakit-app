@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -17,10 +17,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    protected $table = 'user'; // Pastikan ini sesuai dengan database
+    protected $fillable = ['nama_user', 'username', 'password', 'no_telepon', 'roles', 'foto_user'
     ];
 
     /**
@@ -40,6 +38,20 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
     ];
+
+        public function datapasien()
+        {
+            return $this->hasOne(Datapasien::class, 'user_id');
+        }
+
+        protected static function booted()
+        {
+            static::updated(function ($user) {
+                if ($user->isDirty('no_telepon')) {
+                    Datapasien::where('user_id', $user->id)
+                        ->update(['no_telp' => $user->no_telepon]);
+                }
+            });
+        }
 }
